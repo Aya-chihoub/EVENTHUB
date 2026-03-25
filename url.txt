@@ -4,3 +4,7 @@ https://eventhub-node.onrender.com/
 https://eventhub-node.onrender.com/api/health
 
 https://eventhub-aya-chihoubs-projects.vercel.app
+
+Username	Password	Role	Can do
+admin	admin1234	Editor	Full CRUD (create, edit, delete)
+viewer	viewer1234	Viewer	Read-only (no create/edit/delete buttons)
