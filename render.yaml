@@ -1,0 +1,34 @@
+services:
+  # ── Django Backend ──────────────────────────────────────────────────────────
+  - type: web
+    name: eventhub-django
+    runtime: python
+    rootDir: django_backend
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn eventhub.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11.6"
+
+  # ── Node.js Backend ─────────────────────────────────────────────────────────
+  - type: web
+    name: eventhub-node
+    runtime: node
+    rootDir: node_backend
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: "production"
+      - key: PORT
+        value: "4000"
