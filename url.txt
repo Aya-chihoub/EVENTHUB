@@ -1,0 +1,6 @@
+https://eventhub-django-04km.onrender.com
+https://eventhub-django-04km.onrender.com/admin/login/?next=/admin/
+https://eventhub-node.onrender.com/
+https://eventhub-node.onrender.com/api/health
+
+https://eventhub-aya-chihoubs-projects.vercel.app
