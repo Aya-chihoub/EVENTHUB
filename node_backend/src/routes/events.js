@@ -14,17 +14,37 @@ const validate = (req, res, next) => {
 
 const eventValidation = [
   body('title').notEmpty().withMessage('Title is required'),
-  body('start_date').isISO8601().withMessage('Valid start_date required'),
-  body('end_date').isISO8601().withMessage('Valid end_date required'),
+  body('start_date').notEmpty().withMessage('Valid start_date required'),
+  body('end_date').notEmpty().withMessage('Valid end_date required'),
   body('status')
     .optional()
     .isIn(['draft', 'published', 'cancelled', 'completed'])
     .withMessage('Invalid status'),
-  body('max_participants').optional({ nullable: true }).isInt({ min: 1 }),
+  body('max_participants').optional({ nullable: true }),
 ];
 
+function pickEventFields(body) {
+  const { title, description, location, start_date, end_date, status, max_participants } = body;
+  return {
+    title,
+    description: description || '',
+    location: location || '',
+    start_date,
+    end_date,
+    status: status || 'draft',
+    max_participants: max_participants ? parseInt(max_participants, 10) : null,
+  };
+}
+
+function addParticipantCount(event) {
+  const json = event.toJSON();
+  json.participant_count = json.registrations
+    ? json.registrations.filter(r => r.status === 'registered').length
+    : 0;
+  return json;
+}
+
 // GET /api/events
-// Query params: ?status=published  ?start_date_after=2025-01-01  ?start_date_before=2025-12-31
 router.get('/', async (req, res, next) => {
   try {
     const { status, start_date_after, start_date_before } = req.query;
@@ -45,15 +65,16 @@ router.get('/', async (req, res, next) => {
         { model: Registration, as: 'registrations', attributes: ['id', 'status'] },
       ],
     });
-    res.json(events);
+    res.json(events.map(addParticipantCount));
   } catch (err) { next(err); }
 });
 
-// GET /api/events/:id  — includes registered participants
+// GET /api/events/:id
 router.get('/:id', async (req, res, next) => {
   try {
     const event = await Event.findByPk(req.params.id, {
       include: [
+        { model: Registration, as: 'registrations', attributes: ['id', 'status'] },
         {
           model:      Participant,
           as:         'participants',
@@ -63,15 +84,18 @@ router.get('/:id', async (req, res, next) => {
       ],
     });
     if (!event) return res.status(404).json({ error: 'Event not found.' });
-    res.json(event);
+    res.json(addParticipantCount(event));
   } catch (err) { next(err); }
 });
 
 // POST /api/events
 router.post('/', requireEditor, eventValidation, validate, async (req, res, next) => {
   try {
-    const event = await Event.create(req.body);
-    res.status(201).json(event);
+    const event = await Event.create(pickEventFields(req.body));
+    const full = await Event.findByPk(event.id, {
+      include: [{ model: Registration, as: 'registrations', attributes: ['id', 'status'] }],
+    });
+    res.status(201).json(addParticipantCount(full));
   } catch (err) { next(err); }
 });
 
@@ -80,8 +104,11 @@ router.put('/:id', requireEditor, eventValidation, validate, async (req, res, ne
   try {
     const event = await Event.findByPk(req.params.id);
     if (!event) return res.status(404).json({ error: 'Event not found.' });
-    await event.update(req.body);
-    res.json(event);
+    await event.update(pickEventFields(req.body));
+    const full = await Event.findByPk(event.id, {
+      include: [{ model: Registration, as: 'registrations', attributes: ['id', 'status'] }],
+    });
+    res.json(addParticipantCount(full));
   } catch (err) { next(err); }
 });
 
