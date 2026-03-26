@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 
 const Registration = sequelize.define('Registration', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   event_id:       { type: DataTypes.INTEGER, allowNull: false },
   participant_id: { type: DataTypes.INTEGER, allowNull: false },
   status: {

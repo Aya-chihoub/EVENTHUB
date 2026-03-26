@@ -62,7 +62,7 @@ router.get('/', async (req, res, next) => {
       where,
       order: [['start_date', 'DESC']],
       include: [
-        { model: Registration, as: 'registrations', attributes: ['id', 'status'] },
+        { model: Registration, as: 'registrations', attributes: ['status'] },
       ],
     });
     res.json(events.map(addParticipantCount));
@@ -74,12 +74,12 @@ router.get('/:id', async (req, res, next) => {
   try {
     const event = await Event.findByPk(req.params.id, {
       include: [
-        { model: Registration, as: 'registrations', attributes: ['id', 'status'] },
+        { model: Registration, as: 'registrations', attributes: ['status'] },
         {
           model:      Participant,
           as:         'participants',
           attributes: ['id', 'first_name', 'last_name', 'email', 'phone'],
-          through: { attributes: ['id', 'status', 'registered_at', 'notes'] },
+          through: { attributes: ['status', 'registered_at', 'notes'] },
         },
       ],
     });
@@ -92,10 +92,9 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', requireEditor, eventValidation, validate, async (req, res, next) => {
   try {
     const event = await Event.create(pickEventFields(req.body));
-    const full = await Event.findByPk(event.id, {
-      include: [{ model: Registration, as: 'registrations', attributes: ['id', 'status'] }],
-    });
-    res.status(201).json(addParticipantCount(full));
+    const json = event.toJSON();
+    json.participant_count = 0;
+    res.status(201).json(json);
   } catch (err) { next(err); }
 });
 
@@ -106,7 +105,7 @@ router.put('/:id', requireEditor, eventValidation, validate, async (req, res, ne
     if (!event) return res.status(404).json({ error: 'Event not found.' });
     await event.update(pickEventFields(req.body));
     const full = await Event.findByPk(event.id, {
-      include: [{ model: Registration, as: 'registrations', attributes: ['id', 'status'] }],
+      include: [{ model: Registration, as: 'registrations', attributes: ['status'] }],
     });
     res.json(addParticipantCount(full));
   } catch (err) { next(err); }
