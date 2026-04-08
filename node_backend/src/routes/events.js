@@ -38,9 +38,9 @@ function pickEventFields(body) {
 
 function addParticipantCount(event) {
   const json = event.toJSON();
-  json.participant_count = json.registrations
-    ? json.registrations.filter((r) => r.status !== 'cancelled').length
-    : 0;
+  const regs = json.registrations || [];
+  json.participant_count = regs.filter((r) => r.status === 'registered').length;
+  json.waitlist_count = regs.filter((r) => r.status === 'waitlisted').length;
   return json;
 }
 
@@ -81,7 +81,13 @@ async function eventParticipantsHandler(req, res, next) {
       },
       include: [{ model: Participant, as: 'participant' }],
     });
-    const list = regs.map((r) => r.participant?.toJSON()).filter(Boolean);
+    const list = regs
+      .map((r) => {
+        const p = r.participant?.toJSON();
+        if (!p) return null;
+        return { ...p, registration_status: r.status };
+      })
+      .filter(Boolean);
     res.json(list);
   } catch (err) { next(err); }
 }

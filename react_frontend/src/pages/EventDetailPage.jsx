@@ -12,6 +12,7 @@ export default function EventDetailPage() {
   const { isEditor } = useAuth();
   const [selectedParticipant, setSelectedParticipant] = useState('');
   const [regError, setRegError] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
   const [regLoading, setRegLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState(null);
@@ -33,9 +34,15 @@ export default function EventDetailPage() {
     if (!selectedParticipant) return;
     setRegLoading(true);
     setRegError('');
+    setRegSuccess('');
     try {
-      await registrationsService.create({ event: id, participant: selectedParticipant });
+      const { data } = await registrationsService.create({ event: id, participant: selectedParticipant });
       setSelectedParticipant('');
+      if (data?.status === 'waitlisted') {
+        setRegSuccess('Event is at capacity. This participant was added to the waitlist.');
+      } else {
+        setRegSuccess('Participant registered successfully.');
+      }
       reloadParticipants();
       reloadRegistrations();
       reload();
@@ -105,8 +112,11 @@ export default function EventDetailPage() {
   if (!event) return null;
 
   const participants = eventParticipants || [];
-  const registeredIds = new Set(participants.map(p => p.id));
-  const available = (allParticipants?.results || allParticipants || []).filter(p => !registeredIds.has(p.id));
+  const registeredIds = new Set(participants.map((p) => p.id));
+  const available = (allParticipants?.results || allParticipants || []).filter((p) => !registeredIds.has(p.id));
+  const showRegistrationStatus = participants.some((p) => p.registration_status);
+  const statusLabel = (s) =>
+    ({ registered: 'Registered', waitlisted: 'Waitlist', cancelled: 'Cancelled' }[s] || s || 'Registered');
 
   return (
     <div style={{ maxWidth: 800 }}>
@@ -188,7 +198,14 @@ export default function EventDetailPage() {
               { label: 'Start', value: new Date(event.start_date).toLocaleString() },
               { label: 'End', value: new Date(event.end_date).toLocaleString() },
               { label: 'Location', value: event.location || '\u2014' },
-              { label: 'Capacity', value: event.max_participants ? `${event.participant_count}/${event.max_participants}` : `${event.participant_count} registered` },
+              {
+                label: 'Capacity',
+                value: event.max_participants
+                  ? `${event.participant_count}/${event.max_participants}${
+                      event.waitlist_count ? ` (${event.waitlist_count} on waitlist)` : ''
+                    }`
+                  : `${event.participant_count} registered`,
+              },
             ].map(({ label, value }) => (
               <div key={label} style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px' }}>
                 <div style={{ fontSize: 13, color: '#64748b' }}>{label}</div>
@@ -207,11 +224,11 @@ export default function EventDetailPage() {
 
       {/* Registered Participants */}
       <div style={{ background: 'white', borderRadius: 10, padding: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <h2 style={{ marginTop: 0, color: '#1e293b' }}>Registered Participants ({participants.length})</h2>
+        <h2 style={{ marginTop: 0, color: '#1e293b' }}>Participants ({participants.length})</h2>
 
         {isEditor && !event.is_full && (
           <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-            <select value={selectedParticipant} onChange={e => setSelectedParticipant(e.target.value)}
+            <select value={selectedParticipant} onChange={(e) => { setSelectedParticipant(e.target.value); setRegSuccess(''); }}
               style={{ flex: 1, padding: '8px 12px', borderRadius: 6, border: '1px solid #d1d5db' }}>
               <option value="">Select a participant to register...</option>
               {available.map(p => (
@@ -224,25 +241,44 @@ export default function EventDetailPage() {
             </button>
           </div>
         )}
+        {regSuccess && (
+          <p style={{ color: '#15803d', background: '#dcfce7', border: '1px solid #86efac', borderRadius: 6, padding: '10px 14px', marginBottom: 12 }}>
+            {regSuccess}
+          </p>
+        )}
         {regError && <p style={{ color: '#dc2626' }}>{regError}</p>}
 
         {participants.length === 0 ? (
-          <p style={{ color: '#64748b' }}>No participants registered yet.</p>
+          <p style={{ color: '#64748b' }}>No participants yet.</p>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-                {['Name', 'Email', 'Phone', ...(isEditor ? ['Actions'] : [])].map(h => (
+                {['Name', 'Email', 'Phone', ...(showRegistrationStatus ? ['Status'] : []), ...(isEditor ? ['Actions'] : [])].map((h) => (
                   <th key={h} style={{ textAlign: 'left', padding: '8px 12px', color: '#64748b' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {participants.map(p => (
+              {participants.map((p) => (
                 <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '10px 12px' }}>{p.full_name || `${p.first_name} ${p.last_name}`}</td>
                   <td style={{ padding: '10px 12px', color: '#64748b' }}>{p.email}</td>
                   <td style={{ padding: '10px 12px', color: '#64748b' }}>{p.phone || '\u2014'}</td>
+                  {showRegistrationStatus && (
+                    <td style={{ padding: '10px 12px' }}>
+                      <span style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        padding: '2px 10px',
+                        borderRadius: 20,
+                        background: p.registration_status === 'waitlisted' ? '#fef3c7' : '#dcfce7',
+                        color: p.registration_status === 'waitlisted' ? '#b45309' : '#15803d',
+                      }}>
+                        {statusLabel(p.registration_status)}
+                      </span>
+                    </td>
+                  )}
                   {isEditor && (
                     <td style={{ padding: '10px 12px' }}>
                       <button onClick={() => handleUnregister(p.id)}
