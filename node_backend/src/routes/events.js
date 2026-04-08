@@ -69,6 +69,25 @@ router.get('/', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET /api/events/:id/participants/ — matches Django nested route (non-cancelled only)
+async function eventParticipantsHandler(req, res, next) {
+  try {
+    const event = await Event.findByPk(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Event not found.' });
+    const regs = await Registration.findAll({
+      where: {
+        event_id: req.params.id,
+        status: { [Op.ne]: 'cancelled' },
+      },
+      include: [{ model: Participant, as: 'participant' }],
+    });
+    const list = regs.map((r) => r.participant?.toJSON()).filter(Boolean);
+    res.json(list);
+  } catch (err) { next(err); }
+}
+router.get('/:id/participants', eventParticipantsHandler);
+router.get('/:id/participants/', eventParticipantsHandler);
+
 // GET /api/events/:id
 router.get('/:id', async (req, res, next) => {
   try {

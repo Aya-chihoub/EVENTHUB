@@ -46,11 +46,16 @@ export default function EventDetailPage() {
     }
   };
 
+  const registrationEventId = (r) =>
+    typeof r.event === 'object' && r.event != null ? r.event.id : (r.event ?? r.event_id);
+  const registrationParticipantId = (r) =>
+    typeof r.participant === 'object' && r.participant != null ? r.participant.id : (r.participant ?? r.participant_id);
+
   const handleUnregister = async (participantId) => {
     if (!confirm('Remove this participant from the event?')) return;
     const regs = allRegistrations?.results || allRegistrations || [];
     const reg = regs.find(
-      r => String(r.event) === String(id) && String(r.participant) === String(participantId)
+      (r) => String(registrationEventId(r)) === String(id) && String(registrationParticipantId(r)) === String(participantId)
     );
     if (!reg) return;
     try {

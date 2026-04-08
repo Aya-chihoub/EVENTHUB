@@ -11,6 +11,16 @@ const validate = (req, res, next) => {
   next();
 };
 
+/** Map Django-style { event, participant } to { event_id, participant_id } for the React client */
+function normalizeRegistrationBody(req, _res, next) {
+  const b = req.body;
+  if (b.event_id == null && b.event != null) b.event_id = b.event;
+  if (b.participant_id == null && b.participant != null) b.participant_id = b.participant;
+  if (b.event_id != null && b.event_id !== '') b.event_id = parseInt(b.event_id, 10);
+  if (b.participant_id != null && b.participant_id !== '') b.participant_id = parseInt(b.participant_id, 10);
+  next();
+}
+
 // Shared include config reused across routes
 const fullInclude = [
   { model: Event,       as: 'event',       attributes: ['id', 'title', 'start_date', 'end_date', 'status'] },
@@ -51,6 +61,7 @@ router.get('/:id', async (req, res, next) => {
 router.post(
   '/',
   requireEditor,
+  normalizeRegistrationBody,
   [
     body('event_id').isInt({ min: 1 }).withMessage('Valid event_id is required'),
     body('participant_id').isInt({ min: 1 }).withMessage('Valid participant_id is required'),
