@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useFetch } from '../hooks/useFetch';
 import { eventsService } from '../services/events';
 import { useAuth } from '../context/AuthContext';
+import FormAlert from '../components/common/FormAlert';
+import { getApiErrorMessage } from '../utils/apiErrorMessage';
 
 const STATUS_OPTIONS = ['', 'draft', 'published', 'cancelled', 'completed'];
 
@@ -31,7 +33,7 @@ export default function EventsPage() {
       setForm({ title: '', description: '', location: '', start_date: '', end_date: '', status: 'draft', max_participants: '' });
       reload();
     } catch (err) {
-      setFormError(JSON.stringify(err.response?.data || 'Error creating event'));
+      setFormError(getApiErrorMessage(err, 'Could not create the event.'));
     } finally {
       setSaving(false);
     }
@@ -82,7 +84,7 @@ export default function EventsPage() {
       {showForm && (
         <div style={{ background: 'white', borderRadius: 10, padding: '1.5rem', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           <h3 style={{ marginTop: 0 }}>Create New Event</h3>
-          {formError && <div style={{ color: '#dc2626', marginBottom: 12 }}>{formError}</div>}
+          <FormAlert variant="danger">{formError}</FormAlert>
           <form onSubmit={handleCreate}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {[
@@ -128,7 +130,7 @@ export default function EventsPage() {
 
       {/* Events List */}
       {loading && <p style={{ color: '#64748b' }}>Loading events...</p>}
-      {error && <p style={{ color: '#dc2626' }}>{error}</p>}
+      <FormAlert variant="danger">{error}</FormAlert>
       {!loading && events.length === 0 && <p style={{ color: '#64748b' }}>No events found.</p>}
       <div style={{ display: 'grid', gap: 12 }}>
         {events.map(event => (

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import FormAlert from '../components/common/FormAlert';
+import { getApiErrorMessage } from '../utils/apiErrorMessage';
 
 export default function LoginPage() {
   const [form, setForm] = useState({ username: '', password: '' });
@@ -17,7 +19,7 @@ export default function LoginPage() {
       await login(form.username, form.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Check your credentials.');
+      setError(getApiErrorMessage(err, 'Login failed. Check your credentials.'));
     } finally {
       setLoading(false);
     }
@@ -35,14 +37,7 @@ export default function LoginPage() {
         <h1 style={{ margin: '0 0 0.5rem', color: '#1e293b', fontSize: 28 }}>EventHub</h1>
         <p style={{ margin: '0 0 2rem', color: '#64748b' }}>Sign in to your account</p>
 
-        {error && (
-          <div style={{
-            background: '#fef2f2', border: '1px solid #fecaca',
-            color: '#dc2626', borderRadius: 6, padding: '10px 14px', marginBottom: 16
-          }}>
-            {error}
-          </div>
-        )}
+        <FormAlert variant="danger">{error}</FormAlert>
 
         <form onSubmit={handleSubmit}>
           {['username', 'password'].map((field) => (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getApiErrorMessage } from '../utils/apiErrorMessage';
 
 export function useFetch(fetchFn, deps = []) {
   const [data, setData] = useState(null);
@@ -12,7 +13,7 @@ export function useFetch(fetchFn, deps = []) {
       const res = await fetchFn();
       setData(res.data);
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'An error occurred.');
+      setError(getApiErrorMessage(err, 'An error occurred.'));
     } finally {
       setLoading(false);
     }

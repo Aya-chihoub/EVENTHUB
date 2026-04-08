@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useFetch } from '../hooks/useFetch';
 import { participantsService } from '../services/events';
 import { useAuth } from '../context/AuthContext';
+import FormAlert from '../components/common/FormAlert';
+import { getApiErrorMessage } from '../utils/apiErrorMessage';
 
 export default function ParticipantsPage() {
   const { isEditor } = useAuth();
@@ -27,7 +29,7 @@ export default function ParticipantsPage() {
       setForm({ first_name: '', last_name: '', email: '', phone: '', bio: '' });
       reload();
     } catch (err) {
-      setFormError(JSON.stringify(err.response?.data || 'Error creating participant'));
+      setFormError(getApiErrorMessage(err, 'Could not add this participant.'));
     } finally {
       setSaving(false);
     }
@@ -60,7 +62,7 @@ export default function ParticipantsPage() {
       setEditForm(null);
       reload();
     } catch (err) {
-      setEditError(JSON.stringify(err.response?.data || 'Error updating participant'));
+      setEditError(getApiErrorMessage(err, 'Could not update this participant.'));
     } finally {
       setEditSaving(false);
     }
@@ -89,7 +91,7 @@ export default function ParticipantsPage() {
       {showForm && (
         <div style={{ background: 'white', borderRadius: 10, padding: '1.5rem', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           <h3 style={{ marginTop: 0 }}>Add Participant</h3>
-          {formError && <div style={{ color: '#dc2626', marginBottom: 12 }}>{formError}</div>}
+          <FormAlert variant="danger">{formError}</FormAlert>
           <form onSubmit={handleCreate}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {[
@@ -126,10 +128,10 @@ export default function ParticipantsPage() {
       )}
 
       {loading && <p>Loading participants...</p>}
-      {error && <p style={{ color: '#dc2626' }}>{error}</p>}
+      <FormAlert variant="danger">{error}</FormAlert>
       {!loading && participants.length === 0 && <p style={{ color: '#64748b' }}>No participants yet.</p>}
 
-      {editError && <p style={{ color: '#dc2626', marginBottom: 12 }}>{editError}</p>}
+      <FormAlert variant="danger">{editError}</FormAlert>
 
       <div style={{ background: 'white', borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>

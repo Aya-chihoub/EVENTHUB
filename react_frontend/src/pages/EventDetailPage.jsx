@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useFetch } from '../hooks/useFetch';
 import { eventsService, participantsService, registrationsService } from '../services/events';
 import { useAuth } from '../context/AuthContext';
+import FormAlert from '../components/common/FormAlert';
+import { getApiErrorMessage } from '../utils/apiErrorMessage';
 
 const STATUS_OPTIONS = ['draft', 'published', 'cancelled', 'completed'];
 
@@ -47,7 +49,7 @@ export default function EventDetailPage() {
       reloadRegistrations();
       reload();
     } catch (err) {
-      setRegError(JSON.stringify(err.response?.data || 'Registration failed'));
+      setRegError(getApiErrorMessage(err, 'Registration failed.'));
     } finally {
       setRegLoading(false);
     }
@@ -71,7 +73,7 @@ export default function EventDetailPage() {
       reloadRegistrations();
       reload();
     } catch (err) {
-      setRegError(JSON.stringify(err.response?.data || 'Unregister failed'));
+      setRegError(getApiErrorMessage(err, 'Could not remove this registration.'));
     }
   };
 
@@ -101,14 +103,20 @@ export default function EventDetailPage() {
       setEditing(false);
       reload();
     } catch (err) {
-      setEditError(JSON.stringify(err.response?.data || 'Error updating event'));
+      setEditError(getApiErrorMessage(err, 'Could not save changes to this event.'));
     } finally {
       setEditSaving(false);
     }
   };
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p style={{ color: '#dc2626' }}>{error}</p>;
+  if (error) {
+    return (
+      <div style={{ maxWidth: 560 }}>
+        <FormAlert variant="danger">{error}</FormAlert>
+      </div>
+    );
+  }
   if (!event) return null;
 
   const participants = eventParticipants || [];
@@ -128,7 +136,7 @@ export default function EventDetailPage() {
       {editing ? (
         <div style={{ background: 'white', borderRadius: 10, padding: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', marginBottom: 24 }}>
           <h2 style={{ marginTop: 0, color: '#1e293b' }}>Edit Event</h2>
-          {editError && <div style={{ color: '#dc2626', marginBottom: 12 }}>{editError}</div>}
+          <FormAlert variant="danger">{editError}</FormAlert>
           <form onSubmit={handleEditSave}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {[
@@ -241,12 +249,8 @@ export default function EventDetailPage() {
             </button>
           </div>
         )}
-        {regSuccess && (
-          <p style={{ color: '#15803d', background: '#dcfce7', border: '1px solid #86efac', borderRadius: 6, padding: '10px 14px', marginBottom: 12 }}>
-            {regSuccess}
-          </p>
-        )}
-        {regError && <p style={{ color: '#dc2626' }}>{regError}</p>}
+        <FormAlert variant="success">{regSuccess}</FormAlert>
+        <FormAlert variant="danger">{regError}</FormAlert>
 
         {participants.length === 0 ? (
           <p style={{ color: '#64748b' }}>No participants yet.</p>
