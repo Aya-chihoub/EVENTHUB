@@ -1,4 +1,5 @@
 const express = require('express');
+const { Op } = require('sequelize');
 const { body, validationResult } = require('express-validator');
 const { Event, Participant, Registration } = require('../models/associations');
 const { requireEditor } = require('../middleware/auth');
@@ -95,18 +96,23 @@ router.post(
         });
       }
 
-      // 4. Auto-waitlist when event is at capacity
-      let status = 'registered';
+      // 4. Capacity — match Django: block when non-cancelled count >= max (no silent waitlist)
       if (event.max_participants !== null) {
-        const count = await Registration.count({ where: { event_id, status: 'registered' } });
-        if (count >= event.max_participants) status = 'waitlisted';
+        const active = await Registration.count({
+          where: { event_id, status: { [Op.ne]: 'cancelled' } },
+        });
+        if (active >= event.max_participants) {
+          return res.status(409).json({
+            error: 'This event has reached its maximum number of participants.',
+          });
+        }
       }
 
       const registration = await Registration.create({
         event_id,
         participant_id,
         notes: notes || '',
-        status,
+        status: 'registered',
       });
 
       const full = await Registration.findByPk(registration.id, { include: fullInclude });

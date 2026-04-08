@@ -39,7 +39,7 @@ function pickEventFields(body) {
 function addParticipantCount(event) {
   const json = event.toJSON();
   json.participant_count = json.registrations
-    ? json.registrations.filter(r => r.status === 'registered').length
+    ? json.registrations.filter((r) => r.status !== 'cancelled').length
     : 0;
   return json;
 }
