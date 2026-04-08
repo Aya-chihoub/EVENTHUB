@@ -9,7 +9,7 @@ from participants.serializers import ParticipantSerializer
 
 
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.all()
+    queryset = Event.objects.prefetch_related('registrations')
     permission_classes = [IsEditorOrReadOnly]
     filterset_class = EventFilter
     ordering_fields = ['start_date', 'title', 'created_at']

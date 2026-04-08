@@ -39,7 +39,8 @@ function pickEventFields(body) {
 function addParticipantCount(event) {
   const json = event.toJSON();
   const regs = json.registrations || [];
-  json.participant_count = regs.filter((r) => r.status === 'registered').length;
+  // Match Django: everyone except cancelled (includes registered + waitlisted)
+  json.participant_count = regs.filter((r) => r.status !== 'cancelled').length;
   json.waitlist_count = regs.filter((r) => r.status === 'waitlisted').length;
   return json;
 }
@@ -62,7 +63,8 @@ router.get('/', async (req, res, next) => {
       where,
       order: [['start_date', 'DESC']],
       include: [
-        { model: Registration, as: 'registrations', attributes: ['status'] },
+        // Include PK so Sequelize reliably loads nested rows (status-only can return empty)
+        { model: Registration, as: 'registrations', attributes: ['id', 'status'] },
       ],
     });
     res.json(events.map(addParticipantCount));
@@ -99,7 +101,7 @@ router.get('/:id', async (req, res, next) => {
   try {
     const event = await Event.findByPk(req.params.id, {
       include: [
-        { model: Registration, as: 'registrations', attributes: ['status'] },
+        { model: Registration, as: 'registrations', attributes: ['id', 'status'] },
         {
           model:      Participant,
           as:         'participants',
@@ -130,7 +132,7 @@ router.put('/:id', requireEditor, eventValidation, validate, async (req, res, ne
     if (!event) return res.status(404).json({ error: 'Event not found.' });
     await event.update(pickEventFields(req.body));
     const full = await Event.findByPk(event.id, {
-      include: [{ model: Registration, as: 'registrations', attributes: ['status'] }],
+      include: [{ model: Registration, as: 'registrations', attributes: ['id', 'status'] }],
     });
     res.json(addParticipantCount(full));
   } catch (err) { next(err); }
