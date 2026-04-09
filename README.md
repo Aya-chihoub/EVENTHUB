@@ -500,40 +500,6 @@ Set `VITE_API_URL` to your deployed API base URL, e.g. `https://your-api.onrende
 
 ---
 
-## Known issues and fixes
-
-### `OperationalError: no such table`
-
-**Cause:** Migrations not applied.  
-**Fix:**
-
-```bash
-python manage.py makemigrations events participants registrations
-python manage.py migrate
-```
-
-### `ModuleNotFoundError: No module named 'django'`
-
-**Cause:** Dependencies not installed or wrong virtual environment.  
-**Fix:** `pip install -r requirements.txt` inside the correct environment.
-
-### `ImportError: SpectacularSwaggerUIView`
-
-**Cause:** Incompatible or removed `drf-spectacular` setup.  
-**Fix:** Remove Swagger/Spectacular routes from `urls.py` if you are not using that stack.
-
-### Vite proxy `ECONNREFUSED`
-
-**Cause:** Nothing listening on the proxy target, or `localhost` resolves to IPv6 (`::1`) while the API listens on IPv4 only.  
-**Fix:** Start the matching backend; in `vite.config.js`, point `target` to `http://127.0.0.1:8000` (Django) or `http://localhost:4000` (Node), depending on which API you run.
-
-### PostgreSQL / `psycopg2` build issues on Windows
-
-**Cause:** Native driver build conflicts.  
-**Fix:** This project uses **SQLite** for local Django by default; avoid adding `psycopg2` unless you configure PostgreSQL.
-
----
-
 ## Team
 Aya Chihoub, Nour El Imene Khelassi, Massizelle Boubadjou.
 Course project for **Advanced Web Programming**.
