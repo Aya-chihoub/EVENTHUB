@@ -1,53 +1,53 @@
-# EventHub — Système de Gestion d'Événements et de Participants
+# EventHub — Event and Participant Management System
 
-> Projet de programmation web avancée (Labs 7–10)  
-> Stack : Django REST Framework · Node.js/Express · React/Vite
+> Advanced web programming project (Labs 7–10)  
+> Stack: Django REST Framework · Node.js/Express · React/Vite
 
 ---
 
-## Table des matières
+## Table of contents
 
-1. [Présentation du projet](#présentation-du-projet)
-2. [Architecture générale](#architecture-générale)
-3. [Prérequis](#prérequis)
-4. [Installation et démarrage](#installation-et-démarrage)
-   - [Backend Django](#backend-django)
-   - [Backend Node.js](#backend-nodejs)
-   - [Frontend React](#frontend-react)
-5. [Structure du projet](#structure-du-projet)
-6. [Modèles de données](#modèles-de-données)
+1. [Project overview](#project-overview)
+2. [Overall architecture](#overall-architecture)
+3. [Prerequisites](#prerequisites)
+4. [Installation and startup](#installation-and-startup)
+   - [Django backend](#django-backend)
+   - [Node.js backend](#nodejs-backend)
+   - [React frontend](#react-frontend)
+5. [Project structure](#project-structure)
+6. [Data models](#data-models)
 7. [API Reference — Django](#api-reference--django)
 8. [API Reference — Node.js](#api-reference--nodejs)
-9. [Authentification et rôles](#authentification-et-rôles)
-10. [Frontend — Pages et fonctionnalités](#frontend--pages-et-fonctionnalités)
-11. [Variables d'environnement](#variables-denvironnement)
-12. [Comparaison Django vs Node.js](#comparaison-django-vs-nodejs)
-13. [Déploiement](#déploiement)
-14. [Problèmes connus et solutions](#problèmes-connus-et-solutions)
+9. [Authentication and roles](#authentication-and-roles)
+10. [Frontend — Pages and features](#frontend--pages-and-features)
+11. [Environment variables](#environment-variables)
+12. [Django vs Node.js comparison](#django-vs-nodejs-comparison)
+13. [Deployment](#deployment)
+14. [Known issues and fixes](#known-issues-and-fixes)
 
 ---
 
-## Présentation du projet
+## Project overview
 
-**EventHub** est une application web full-stack de gestion d'événements et de participants. Elle permet de :
+**EventHub** is a full-stack web app for managing events and participants. It supports:
 
-- Créer et gérer des événements (titre, description, lieu, dates, capacité, statut)
-- Gérer un annuaire de participants (nom, email, téléphone, bio)
-- Inscrire des participants à des événements avec contrôle de capacité
-- Contrôler l'accès via deux rôles : **éditeur** (CRUD complet) et **lecteur** (lecture seule)
-- Filtrer les événements par statut et par plage de dates
+- Creating and managing events (title, description, location, dates, capacity, status)
+- Maintaining a participant directory (name, email, phone, bio)
+- Registering participants for events with capacity checks
+- Access control via two roles: **editor** (full CRUD) and **viewer** (read-only)
+- Filtering events by status and date range
 
-Le projet expose **deux backends indépendants** implémentant la même API REST : l'un en Django (Python) et l'autre en Node.js/Express (JavaScript), à des fins de comparaison technique.
+The project exposes **two independent backends** implementing the same REST API: one in Django (Python) and one in Node.js/Express (JavaScript), for technical comparison.
 
 ---
 
-## Architecture générale
+## Overall architecture
 
 ```
-eventhub_project/
-├── django_backend/     # API REST Python/Django
-├── node_backend/       # API REST Node.js/Express
-└── react_frontend/     # Interface utilisateur React/Vite
+EVENTHUB/
+├── django_backend/     # Python/Django REST API
+├── node_backend/       # Node.js/Express REST API
+└── react_frontend/     # React/Vite UI
 ```
 
 ```
@@ -55,16 +55,16 @@ React Frontend (port 5173)
         │  HTTP/JSON + JWT
         ▼
 Django Backend (port 8000)   ◄──► SQLite (db.sqlite3)
-        ou
+        or
 Node.js Backend (port 4000)  ◄──► SQLite (database.sqlite)
 ```
 
 ---
 
-## Prérequis
+## Prerequisites
 
-| Outil | Version minimale |
-|-------|-----------------|
+| Tool | Minimum version |
+|------|-----------------|
 | Python | 3.10+ |
 | Node.js | 18+ |
 | npm | 9+ |
@@ -72,253 +72,254 @@ Node.js Backend (port 4000)  ◄──► SQLite (database.sqlite)
 
 ---
 
-## Installation et démarrage
+## Installation and startup
 
-### Backend Django
+### Django backend
 
 ```bash
-# 1. Se placer dans le répertoire
-cd eventhub/django_backend
+# 1. Go to the directory
+cd django_backend
 
-# 2. Installer les dépendances Python
+# 2. Install Python dependencies
 pip install -r requirements.txt
 
-# 3. Configurer l'environnement
+# 3. Configure environment
 copy .env.example .env      # Windows
 # cp .env.example .env      # Linux/Mac
 
-# 4. Créer les tables de la base de données
+# 4. Create database tables
 python manage.py makemigrations events participants registrations
 python manage.py migrate
 
-# 5. Créer un superutilisateur (éditeur)
+# 5. Create a superuser (editor)
 python manage.py createsuperuser
 
-# 6. (Optionnel) Créer un utilisateur lecteur
+# 6. (Optional) Create a viewer user
 python manage.py shell
 # >>> from django.contrib.auth.models import User
 # >>> User.objects.create_user(username='viewer1', password='viewer1234')
 # >>> exit()
 
-# 7. Démarrer le serveur
+# 7. Start the server
 python manage.py runserver
 # → http://127.0.0.1:8000/
 ```
 
-### Backend Node.js
+### Node.js backend
 
 ```bash
-# 1. Se placer dans le répertoire
-cd eventhub/node_backend
+# 1. Go to the directory
+cd node_backend
 
-# 2. Installer les dépendances
+# 2. Install dependencies
 npm install
 
-# 3. Configurer l'environnement
+# 3. Configure environment
 copy .env.example .env      # Windows
 # cp .env.example .env      # Linux/Mac
 
-# 4. Démarrer le serveur
+# 4. Start the server
 npm run dev
 # → http://localhost:4000/
 ```
 
-### Frontend React
+### React frontend
 
 ```bash
-# 1. Se placer dans le répertoire
-cd eventhub/react_frontend
+# 1. Go to the directory
+cd react_frontend
 
-# 2. Installer les dépendances
+# 2. Install dependencies
 npm install
 
-# 3. Démarrer le serveur de développement
+# 3. Start the dev server
 npm run dev
 # → http://localhost:5173/
 ```
 
-> **Note :** Le frontend est configuré pour proxifier vers le backend Django (`127.0.0.1:8000`) par défaut. Pour basculer vers Node.js, modifier `target` dans `vite.config.js`.
+> **Note:** In development, Vite proxies `/api` to the backend defined in `vite.config.js` (by default the **Node** API on port **4000**). To use **Django** locally, set the proxy `target` to `http://127.0.0.1:8000`. For production, set `VITE_API_URL` to your deployed API base URL (including `/api`).
 
 ---
 
-## Structure du projet
+## Project structure
 
-### Django Backend
+### Django backend
 
 ```
 django_backend/
 ├── manage.py
 ├── requirements.txt
 ├── .env.example
-├── db.sqlite3                  # Base de données (générée automatiquement)
+├── db.sqlite3                  # Database (generated)
 ├── eventhub/
-│   ├── settings.py             # Configuration Django
-│   ├── urls.py                 # Routes principales
+│   ├── settings.py             # Django settings
+│   ├── urls.py                 # Root routes
 │   └── wsgi.py
 ├── events/
-│   ├── models.py               # Modèle Event
+│   ├── models.py               # Event model
 │   ├── serializers.py          # EventSerializer, EventListSerializer
 │   ├── views.py                # EventViewSet
-│   ├── filters.py              # EventFilter (statut, dates)
+│   ├── filters.py              # EventFilter (status, dates)
 │   ├── permissions.py          # IsAdminOrReadOnly
 │   └── urls.py
 ├── participants/
-│   ├── models.py               # Modèle Participant
+│   ├── models.py               # Participant model
 │   ├── serializers.py
 │   ├── views.py
 │   └── urls.py
 ├── registrations/
-│   ├── models.py               # Modèle Registration
+│   ├── models.py               # Registration model
 │   ├── serializers.py
-│   ├── views.py                # Règles métier : doublons, capacité, statut
+│   ├── views.py                # Business rules: duplicates, capacity, status
 │   └── urls.py
 └── authentication/
-    ├── views.py                # Login, Logout, Register
+    ├── views.py                # Login, logout, register
     └── serializers.py
 ```
 
-### Node.js Backend
+### Node.js backend
 
 ```
 node_backend/
 ├── package.json
 ├── .env.example
 └── src/
-    ├── index.js                # Point d'entrée Express
+    ├── index.js                # Express entry point
     ├── config/
-    │   └── database.js         # Configuration Sequelize/SQLite
+    │   └── database.js         # Sequelize/SQLite
     ├── models/
-    │   ├── Event.js
-    │   └── Participant.js
     ├── routes/
     │   ├── auth.js
     │   ├── events.js
-    │   └── participants.js
+    │   ├── participants.js
+    │   └── registrations.js
     └── middleware/
         ├── auth.js             # authenticateToken, requireEditor
         └── errorHandler.js
 ```
 
-### React Frontend
+### React frontend
 
 ```
 react_frontend/
 ├── index.html
-├── vite.config.js              # Proxy → 127.0.0.1:8000
+├── vite.config.js              # Dev proxy → backend (see file)
 └── src/
     ├── main.jsx
-    ├── App.jsx                 # Routes React Router
+    ├── App.jsx                 # React Router routes
     ├── context/
-    │   └── AuthContext.jsx     # Gestion login/logout/rôles
+    │   └── AuthContext.jsx     # Login/logout/roles
     ├── services/
-    │   ├── api.js              # Axios + intercepteur JWT
-    │   ├── events.js           # eventsService
-    │   └── (participants, registrations)
+    │   ├── api.js              # Axios + JWT interceptor
+    │   ├── events.js
+    │   └── …
     ├── hooks/
     │   └── useFetch.js
     ├── components/
     │   └── common/
-    │       ├── Layout.jsx      # Navbar avec rôle affiché
+    │       ├── Layout.jsx      # Navbar with role
     │       └── ProtectedRoute.jsx
     └── pages/
         ├── LoginPage.jsx
-        ├── DashboardPage.jsx   # Statistiques + événements récents
-        ├── EventsPage.jsx      # Liste + filtres + création
-        ├── EventDetailPage.jsx # Détail + inscriptions
+        ├── DashboardPage.jsx   # Stats + recent events
+        ├── EventsPage.jsx      # List, filters, create
+        ├── EventDetailPage.jsx
         └── ParticipantsPage.jsx
 ```
 
 ---
 
-## Modèles de données
+## Data models
 
 ### Event
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
-| `id` | AutoField | Clé primaire |
-| `title` | CharField(200) | Titre de l'événement |
-| `description` | TextField | Description (optionnelle) |
-| `location` | CharField(300) | Lieu (optionnel) |
-| `start_date` | DateTimeField | Date/heure de début |
-| `end_date` | DateTimeField | Date/heure de fin |
-| `max_participants` | PositiveIntegerField | Capacité max (optionnelle) |
+| `id` | AutoField | Primary key |
+| `title` | CharField(200) | Event title |
+| `description` | TextField | Description (optional) |
+| `location` | CharField(300) | Location (optional) |
+| `start_date` | DateTimeField | Start date/time |
+| `end_date` | DateTimeField | End date/time |
+| `max_participants` | PositiveIntegerField | Max capacity (optional) |
 | `status` | CharField | `draft` / `published` / `cancelled` / `completed` |
-| `created_at` | DateTimeField | Création (auto) |
-| `updated_at` | DateTimeField | Modification (auto) |
+| `created_at` | DateTimeField | Created (auto) |
+| `updated_at` | DateTimeField | Updated (auto) |
 
 ### Participant
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
-| `id` | AutoField | Clé primaire |
-| `first_name` | CharField(100) | Prénom |
-| `last_name` | CharField(100) | Nom |
+| `id` | AutoField | Primary key |
+| `first_name` | CharField(100) | First name |
+| `last_name` | CharField(100) | Last name |
 | `email` | EmailField | Email (unique) |
-| `phone` | CharField(20) | Téléphone (optionnel) |
-| `bio` | TextField | Biographie (optionnelle) |
+| `phone` | CharField(20) | Phone (optional) |
+| `bio` | TextField | Bio (optional) |
 
 ### Registration
 
-| Champ | Type | Description |
+| Field | Type | Description |
 |-------|------|-------------|
-| `id` | AutoField | Clé primaire |
-| `event` | ForeignKey(Event) | Événement |
+| `id` | AutoField | Primary key |
+| `event` | ForeignKey(Event) | Event |
 | `participant` | ForeignKey(Participant) | Participant |
 | `status` | CharField | `pending` / `confirmed` / `cancelled` |
-| `registered_at` | DateTimeField | Date d'inscription (auto) |
+| `registered_at` | DateTimeField | Registration time (auto) |
 
-**Contraintes métier :**
-- Un participant ne peut pas être inscrit deux fois au même événement
-- Impossible de s'inscrire à un événement annulé
-- Impossible de s'inscrire si l'événement est complet (`max_participants` atteint)
+**Business rules:**
+
+- A participant cannot register twice for the same event
+- Cannot register for a cancelled event
+- Cannot register when the event is full (`max_participants` reached)
 
 ---
 
 ## API Reference — Django
 
-**Base URL :** `http://127.0.0.1:8000/api/`
+**Base URL:** `http://127.0.0.1:8000/api/`
 
-Toutes les routes nécessitent un header `Authorization: Bearer <access_token>` sauf `/auth/login/` et `/auth/register/`.
+All routes require an `Authorization: Bearer <access_token>` header except `/auth/login/` and `/auth/register/`.
 
-### Authentification
+### Authentication
 
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| `POST` | `/auth/login/` | Connexion → retourne `access` + `refresh` tokens |
-| `POST` | `/auth/logout/` | Déconnexion |
-| `POST` | `/auth/register/` | Création de compte |
-| `POST` | `/auth/token/refresh/` | Rafraîchissement du token |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/auth/login/` | Login → returns `access` + `refresh` tokens |
+| `POST` | `/auth/logout/` | Logout |
+| `POST` | `/auth/register/` | Register |
+| `POST` | `/auth/token/refresh/` | Refresh token |
 
-**Exemple login :**
+**Login example:**
+
 ```json
 POST /api/auth/login/
 {
-  "username": "massizelle",
-  "password": "monpassword"
+  "username": "admin",
+  "password": "yourpassword"
 }
-// Réponse :
+// Response:
 {
   "access": "eyJ...",
   "refresh": "eyJ...",
-  "user": { "id": 1, "username": "massizelle", "role": "editor" }
+  "user": { "id": 1, "username": "admin", "role": "editor" }
 }
 ```
 
-### Événements
+### Events
 
-| Méthode | Endpoint | Permission | Description |
-|---------|----------|-----------|-------------|
-| `GET` | `/events/` | Tous | Liste des événements (paginée) |
-| `POST` | `/events/` | Éditeur | Créer un événement |
-| `GET` | `/events/{id}/` | Tous | Détail d'un événement |
-| `PUT` | `/events/{id}/` | Éditeur | Modifier un événement |
-| `DELETE` | `/events/{id}/` | Éditeur | Supprimer un événement |
-| `GET` | `/events/{id}/participants/` | Tous | Participants inscrits |
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| `GET` | `/events/` | All | Paginated event list |
+| `POST` | `/events/` | Editor | Create event |
+| `GET` | `/events/{id}/` | All | Event detail |
+| `PUT` | `/events/{id}/` | Editor | Update event |
+| `DELETE` | `/events/{id}/` | Editor | Delete event |
+| `GET` | `/events/{id}/participants/` | All | Registered participants |
 
-**Paramètres de filtre (GET /events/) :**
+**Filter query params (`GET /events/`):**
 
-| Paramètre | Type | Exemple |
+| Parameter | Type | Example |
 |-----------|------|---------|
 | `status` | string | `?status=published` |
 | `start_date_after` | date | `?start_date_after=2026-01-01` |
@@ -326,23 +327,24 @@ POST /api/auth/login/
 
 ### Participants
 
-| Méthode | Endpoint | Permission | Description |
-|---------|----------|-----------|-------------|
-| `GET` | `/participants/` | Tous | Liste des participants |
-| `POST` | `/participants/` | Éditeur | Créer un participant |
-| `GET` | `/participants/{id}/` | Tous | Détail d'un participant |
-| `PUT` | `/participants/{id}/` | Éditeur | Modifier un participant |
-| `DELETE` | `/participants/{id}/` | Éditeur | Supprimer un participant |
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| `GET` | `/participants/` | All | Participant list |
+| `POST` | `/participants/` | Editor | Create participant |
+| `GET` | `/participants/{id}/` | All | Participant detail |
+| `PUT` | `/participants/{id}/` | Editor | Update participant |
+| `DELETE` | `/participants/{id}/` | Editor | Delete participant |
 
-### Inscriptions
+### Registrations
 
-| Méthode | Endpoint | Permission | Description |
-|---------|----------|-----------|-------------|
-| `GET` | `/registrations/` | Tous | Liste des inscriptions |
-| `POST` | `/registrations/` | Éditeur | Créer une inscription |
-| `DELETE` | `/registrations/{id}/` | Éditeur | Annuler une inscription |
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| `GET` | `/registrations/` | All | Registration list |
+| `POST` | `/registrations/` | Editor | Create registration |
+| `DELETE` | `/registrations/{id}/` | Editor | Cancel registration |
 
-**Exemple création inscription :**
+**Create registration example:**
+
 ```json
 POST /api/registrations/
 {
@@ -355,77 +357,83 @@ POST /api/registrations/
 
 ## API Reference — Node.js
 
-**Base URL :** `http://localhost:4000/api/`
+**Base URL:** `http://localhost:4000/api/`
 
-Les routes sont identiques à celles de Django. Le token JWT est également passé dans le header `Authorization: Bearer <token>`.
+Routes mirror Django. Send the JWT in the `Authorization: Bearer <token>` header.
 
 ---
 
-## Authentification et rôles
+## Authentication and roles
 
-Le système utilise **JWT (JSON Web Tokens)** via `djangorestframework-simplejwt`.
+The stack uses **JWT** via `djangorestframework-simplejwt` on Django; Node uses `jsonwebtoken` with the same response shape (`access`, `refresh`, `user`).
 
-### Durée des tokens
+### Token lifetime
 
-| Token | Durée |
-|-------|-------|
-| Access token | 1 heure |
-| Refresh token | 7 jours |
+| Token | Lifetime |
+|-------|----------|
+| Access token | 1 hour |
+| Refresh token | 7 days |
 
-### Rôles
+### Roles
 
-| Rôle | Conditions | Droits |
-|------|-----------|--------|
-| **Éditeur** | `is_staff=True` OU dans le groupe `editor` | CRUD complet |
-| **Lecteur** | Authentifié uniquement | Lecture seule (GET) |
+| Role | Conditions | Permissions |
+|------|------------|-------------|
+| **Editor** | `is_staff=True` or in `editor` group | Full CRUD |
+| **Viewer** | Authenticated | Read-only (GET) |
 
-### Promouvoir un utilisateur en éditeur
+### Promote a user to editor (Django)
 
 ```bash
 python manage.py shell
 ```
+
 ```python
 from django.contrib.auth.models import User, Group
-user = User.objects.get(username='nom_utilisateur')
+user = User.objects.get(username='username')
 group, _ = Group.objects.get_or_create(name='editor')
 user.groups.add(group)
 ```
 
 ---
 
-## Frontend — Pages et fonctionnalités
+## Frontend — Pages and features
 
-### Page de connexion (`/login`)
-- Formulaire email/mot de passe
-- Stockage du JWT en mémoire via Context API
-- Redirection automatique selon le rôle
+### Login (`/login`)
 
-### Tableau de bord (`/dashboard`)
-- 4 cartes statistiques : total événements, publiés, total participants, inscriptions
-- Tableau des événements récents avec statut coloré
+- Username/password form
+- JWT stored in `localStorage` via `AuthContext`
+- Redirect after sign-in
 
-### Événements (`/events`)
-- Liste paginée avec filtres (statut + plage de dates)
-- Bouton "Nouvel événement" visible uniquement pour les éditeurs
-- Formulaire de création inline
+### Dashboard (`/dashboard`)
 
-### Détail d'un événement (`/events/:id`)
-- Informations complètes de l'événement
-- Liste des participants inscrits
-- Formulaire d'inscription (éditeurs uniquement)
+- Four stat cards: total events, published, total participants, registrations
+- Recent events table with status styling
+
+### Events (`/events`)
+
+- Paginated list with filters (status + date range)
+- “New event” for editors only
+- Inline create form
+
+### Event detail (`/events/:id`)
+
+- Full event info
+- Registered participants
+- Registration form (editors)
 
 ### Participants (`/participants`)
-- Liste de tous les participants
-- Création et suppression (éditeurs uniquement)
+
+- Participant list
+- Create/delete (editors)
 
 ---
 
-## Variables d'environnement
+## Environment variables
 
 ### Django (`django_backend/.env`)
 
 ```env
-SECRET_KEY=votre-clé-secrète-django
+SECRET_KEY=your-django-secret-key
 DEBUG=True
 ALLOWED_HOSTS=*
 ```
@@ -434,90 +442,102 @@ ALLOWED_HOSTS=*
 
 ```env
 PORT=4000
-JWT_SECRET=votre-clé-secrète-jwt
+JWT_SECRET=your-jwt-secret
 NODE_ENV=development
 ```
 
----
+### React (production build)
 
-## Comparaison Django vs Node.js
-
-| Critère | Django REST Framework | Node.js / Express |
-|---------|----------------------|-------------------|
-| **Langage** | Python | JavaScript |
-| **ORM** | Django ORM (intégré) | Sequelize |
-| **Migrations** | `makemigrations` / `migrate` | `sync({ force })` ou migrations manuelles |
-| **Auth JWT** | `djangorestframework-simplejwt` | `jsonwebtoken` |
-| **Validation** | Serializers automatiques | `express-validator` manuel |
-| **Permissions** | Système de permissions intégré | Middleware personnalisé |
-| **Admin** | Interface admin incluse (`/admin`) | Aucun (à développer) |
-| **Filtrage** | `django-filter` | Logique manuelle dans les routes |
-| **Courbe d'apprentissage** | Plus élevée (conventions Django) | Plus accessible |
-| **Performance** | Correct pour CRUD | Excellent (event loop async) |
-| **Boilerplate** | Faible (batteries incluses) | Plus verbeux |
-
-**Conclusion :** Django est plus adapté pour des projets structurés avec beaucoup de règles métier grâce à ses outils intégrés. Node.js offre plus de flexibilité et de performance pour des APIs légères ou temps réel.
+Set `VITE_API_URL` to your deployed API base URL, e.g. `https://your-api.onrender.com/api` (Vite embeds this at build time).
 
 ---
 
-## Déploiement
+## Django vs Node.js comparison
 
-### Backend Django → Render (gratuit)
+| Aspect | Django REST Framework | Node.js / Express |
+|--------|------------------------|-------------------|
+| **Language** | Python | JavaScript |
+| **ORM** | Django ORM (built-in) | Sequelize |
+| **Migrations** | `makemigrations` / `migrate` | `sequelize.sync()` or manual migrations |
+| **JWT auth** | `djangorestframework-simplejwt` | `jsonwebtoken` |
+| **Validation** | Serializers | `express-validator` / manual |
+| **Permissions** | Built-in permission classes | Custom middleware |
+| **Admin** | `/admin` included | None (build your own) |
+| **Filtering** | `django-filter` | Manual in routes |
+| **Learning curve** | Steeper (Django conventions) | Often lighter entry |
+| **Performance** | Fine for typical CRUD | Strong for I/O-heavy APIs |
+| **Boilerplate** | Lower (“batteries included”) | More explicit code |
 
-1. Créer un compte sur [render.com](https://render.com)
-2. Nouveau service Web → connecter le dépôt GitHub
-3. **Build command :** `pip install -r requirements.txt && python manage.py migrate`
-4. **Start command :** `gunicorn eventhub.wsgi`
-5. Ajouter les variables d'environnement (`SECRET_KEY`, `DEBUG=False`, `ALLOWED_HOSTS`)
-
-### Backend Node.js → Render (gratuit)
-
-1. Nouveau service Web → même dépôt
-2. **Root directory :** `eventhub/node_backend`
-3. **Build command :** `npm install`
-4. **Start command :** `npm start`
-
-### Frontend React → Vercel (gratuit)
-
-1. Créer un compte sur [vercel.com](https://vercel.com)
-2. Importer le projet → sélectionner `eventhub/react_frontend`
-3. Modifier `vite.config.js` pour pointer vers l'URL de production du backend
-4. Déployer
+**Summary:** Django fits structured projects with rich business rules. Node offers flexibility and is a strong fit for lightweight or real-time APIs.
 
 ---
 
-## Problèmes connus et solutions
+## Deployment
+
+### Django backend → Render (free tier)
+
+1. Create an account on [render.com](https://render.com)
+2. New Web Service → connect the GitHub repo
+3. Set **Root directory** to `django_backend` (if deploying from monorepo)
+4. **Build command:** e.g. use `build.sh` or `pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate`
+5. **Start command:** `gunicorn eventhub.wsgi:application --bind 0.0.0.0:$PORT`
+6. Set env vars: `SECRET_KEY`, `DEBUG=False`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, etc.
+
+### Node.js backend → Render (free tier)
+
+1. New Web Service → same repo
+2. **Root directory:** `node_backend`
+3. **Build command:** `npm install`
+4. **Start command:** `npm start` or `node src/index.js`
+5. Set `JWT_SECRET`, `NODE_ENV=production`; Render provides `PORT`
+
+### React frontend → Vercel (free tier)
+
+1. Create an account on [vercel.com](https://vercel.com)
+2. Import the project → root `react_frontend`
+3. Set **`VITE_API_URL`** to your production API (e.g. `https://your-service.onrender.com/api`)
+4. Deploy (redeploy after changing env vars)
+
+---
+
+## Known issues and fixes
 
 ### `OperationalError: no such table`
-**Cause :** Les migrations n'ont pas été appliquées.  
-**Solution :**
+
+**Cause:** Migrations not applied.  
+**Fix:**
+
 ```bash
 python manage.py makemigrations events participants registrations
 python manage.py migrate
 ```
 
 ### `ModuleNotFoundError: No module named 'django'`
-**Cause :** `pip install` a échoué (souvent à cause de `psycopg2`).  
-**Solution :** Retirer `psycopg2-binary` de `requirements.txt` et réinstaller.
+
+**Cause:** Dependencies not installed or wrong virtual environment.  
+**Fix:** `pip install -r requirements.txt` inside the correct environment.
 
 ### `ImportError: SpectacularSwaggerUIView`
-**Cause :** Version de `drf-spectacular` incompatible.  
-**Solution :** Retirer les imports Swagger de `urls.py`.
 
-### Proxy Vite `ECONNREFUSED`
-**Cause :** Vite résout `localhost` en IPv6 (`::1`) mais Django écoute sur IPv4.  
-**Solution :** Dans `vite.config.js`, changer le proxy target en `http://127.0.0.1:8000`.
+**Cause:** Incompatible or removed `drf-spectacular` setup.  
+**Fix:** Remove Swagger/Spectacular routes from `urls.py` if you are not using that stack.
 
-### `psycopg2-binary` build failure (Windows)
-**Cause :** Conflit entre les headers MinGW (GNU Octave) et MSVC.  
-**Solution :** Utiliser SQLite en développement (retirer `psycopg2-binary` de `requirements.txt`).
+### Vite proxy `ECONNREFUSED`
 
----
+**Cause:** Nothing listening on the proxy target, or `localhost` resolves to IPv6 (`::1`) while the API listens on IPv4 only.  
+**Fix:** Start the matching backend; in `vite.config.js`, point `target` to `http://127.0.0.1:8000` (Django) or `http://localhost:4000` (Node), depending on which API you run.
 
-## Équipe
+### PostgreSQL / `psycopg2` build issues on Windows
 
-Projet réalisé dans le cadre du cours de **Programmation Web Avancée**.
+**Cause:** Native driver build conflicts.  
+**Fix:** This project uses **SQLite** for local Django by default; avoid adding `psycopg2` unless you configure PostgreSQL.
 
 ---
 
-*Dernière mise à jour : Mars 2026*
+## Team
+
+Course project for **Advanced Web Programming**.
+
+---
+
+*Last updated: April 2026*
