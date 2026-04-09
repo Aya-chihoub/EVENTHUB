@@ -23,7 +23,6 @@
 11. [Environment variables](#environment-variables)
 12. [Django vs Node.js comparison](#django-vs-nodejs-comparison)
 13. [Deployment](#deployment)
-14. [Known issues and fixes](#known-issues-and-fixes)
 
 ---
 
