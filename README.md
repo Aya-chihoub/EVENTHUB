@@ -535,7 +535,7 @@ python manage.py migrate
 ---
 
 ## Team
-
+Aya Chihoub, Nour El Imene Khelassi, Massizelle Boubadjou.
 Course project for **Advanced Web Programming**.
 
 ---
